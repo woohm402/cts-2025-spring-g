@@ -9,10 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Sparkles, Zap, Brain, Bot, BarChart } from "lucide-react";
 
-// Sample model data
 const models = [
   {
     id: "whisper",
@@ -58,6 +58,7 @@ const models = [
 
 export const App = () => {
   const [selectedModel, setSelectedModel] = useState(models[0]);
+  const [input, setInput] = useState("");
   const [output, setOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -134,15 +135,17 @@ export const App = () => {
               </TabsList>
               <TabsContent value="test" className="space-y-4">
                 <div className="mt-4">
-                  <h3 className="mb-2 text-sm font-medium">음성 파일 업로드</h3>
-                  <input
-                    type="file"
-                    className="w-full border border-gray-300 rounded-md p-2"
+                  <h3 className="mb-2 text-sm font-medium">Input</h3>
+                  <Textarea
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Enter text here..."
+                    className="min-h-[120px]"
                   />
                 </div>
                 <Button
                   onClick={handleRunModel}
-                  disabled={isLoading}
+                  disabled={isLoading || !input.trim()}
                   className="w-full"
                 >
                   {isLoading ? (
@@ -221,6 +224,9 @@ export const App = () => {
               Selected model:{" "}
               <span className="font-medium">{selectedModel.name}</span>
             </div>
+            <Button variant="outline" size="sm" onClick={() => setOutput("")}>
+              Clear Output
+            </Button>
           </CardFooter>
         </Card>
       </div>

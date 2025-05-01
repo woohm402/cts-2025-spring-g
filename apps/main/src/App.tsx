@@ -32,60 +32,77 @@ const getDefaultSsml = ({
   return {
     [Model.GCP]: {
       [Language.KOREAN]: `<speak>
-<emphasis level="strong">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="moderate">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="none">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="reduced">I want something just like this.</emphasis>
-<break time="1s"/>
+<emphasis level="strong">봄 시즌 특별 세일이 시작되었습니다!</emphasis>
+<break time="500ms"/>
+<emphasis level="moderate">인기 브랜드 전품목 할인 진행중</emphasis>
+<break time="400ms"/>
+<emphasis level="reduced">수천 가지의 상품을 둘러보세요</emphasis>
+<break time="300ms"/>
+<emphasis level="strong">최대 50% 할인!</emphasis>
+<break time="400ms"/>
+<emphasis level="moderate">이 특별한 기회를 놓치지 마세요.</emphasis>
 </speak>`,
       [Language.ENGLISH]: `<speak>
-<emphasis level="strong">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="moderate">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="none">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="reduced">I want something just like this.</emphasis>
-<break time="1s"/>
+<emphasis level="strong">Welcome to our Amazing Spring Sale!</emphasis>
+<break time="500ms"/>
+<emphasis level="moderate">All your favorite brands are now on discount.</emphasis>
+<break time="400ms"/>
+<emphasis level="reduced">Browse through thousands of items</emphasis>
+<break time="300ms"/>
+<emphasis level="strong">at up to 50% off!</emphasis>
+<break time="400ms"/>
+<emphasis level="moderate">Don't miss out on these incredible deals.</emphasis>
 </speak>`,
     },
     [Model.AWS]: {
       [Language.KOREAN]: `<speak>
-<emphasis level="strong">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="moderate">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="none">I want something just like this.</emphasis>
-<break time="1s"/>
-<emphasis level="reduced">I want something just like this.</emphasis>
-<break time="1s"/>
-</speak>`,
-      [Language.ENGLISH]: `<speak>
-        <prosody rate="fast" pitch="+10%">
-          You won't believe this!
-        </prosody>
-        <break time="300ms"/>
-
-        <prosody rate="medium">
-          For today only...
+        <prosody rate="medium" pitch="+5%">
+          봄 신상품 컬렉션이 도착했습니다!
         </prosody>
         <break time="400ms"/>
 
-        <prosody rate="x-fast" pitch="+15%">
-          Everything is up to seventy percent off!
+        <prosody rate="fast" pitch="+15%">
+          최대 70% 할인의 놀라운 기회를 잡으세요!
         </prosody>
         <break time="300ms"/>
 
-        <prosody rate="fast" pitch="+5%">
-          Stocks are limited — so hurry!
+        <prosody rate="medium" pitch="+10%">
+          유명 브랜드부터 트렌디한 신상품까지, 단독 특가
         </prosody>
-        <break time="200ms"/>
+        <break time="400ms"/>
 
-        <prosody rate="medium">
-          Shop now and treat yourself.
+        <prosody rate="x-fast" pitch="+20%">
+          한정 수량으로 준비된 특별한 혜택!
+        </prosody>
+        <break time="300ms"/>
+
+        <prosody rate="medium" pitch="+5%">
+          지금 바로 쇼핑을 시작해보세요.
+        </prosody>
+      </speak>`,
+      [Language.ENGLISH]: `<speak>
+        <prosody rate="medium" pitch="+5%">
+          Welcome to our spectacular Spring Collection!
+        </prosody>
+        <break time="400ms"/>
+
+        <prosody rate="fast" pitch="+15%">
+          Get ready for incredible deals up to 70% off!
+        </prosody>
+        <break time="300ms"/>
+
+        <prosody rate="medium" pitch="+10%">
+          Designer brands, latest trends, and exclusive items
+        </prosody>
+        <break time="400ms"/>
+
+        <prosody rate="x-fast" pitch="+20%">
+          Limited time offer - Don't miss out!
+        </prosody>
+        <break time="300ms"/>
+
+        <prosody rate="medium" pitch="+5%">
+          Shop now and transform your wardrobe today.
         </prosody>
       </speak>`,
     },

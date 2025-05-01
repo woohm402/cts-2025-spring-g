@@ -1,0 +1,14 @@
+{
+  "name": "cts-2025-spring-g",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun --bun --filter='*' dev",
+    "check": "biome check .",
+    "fix": "biome check . --fix"
+  },
+  "workspaces": ["apps/*", "engines/*", "packages/*"],
+  "devDependencies": {
+    "@biomejs/biome": "1.9.4"
+  }
+}

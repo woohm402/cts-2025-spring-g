@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Zap, Amphora } from "lucide-react";
+import { Loader2, Zap, Amphora, Cloud } from "lucide-react";
 import { Toaster } from "./components/ui/sonner";
 import { toast } from "sonner";
 
@@ -20,6 +20,7 @@ enum Language {
 enum Model {
   GCP = "GCP",
   AWS = "AWS",
+  AZURE = "AZURE",
 }
 
 const getDefaultSsml = ({
@@ -106,6 +107,66 @@ const getDefaultSsml = ({
         </prosody>
       </speak>`,
     },
+    [Model.AZURE]: {
+      [Language.KOREAN]: `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="ko-KR">
+      <voice name="ko-KR-SunHiNeural">
+        <prosody rate="medium" pitch="high">
+          <emphasis level="strong">봄맞이 럭셔리 세일 페스티벌!</emphasis>
+        </prosody>
+        <break time="400ms"/>
+
+        <prosody rate="fast" pitch="+10%">
+          전 상품 최대 60% 할인 진행중
+        </prosody>
+        <break time="300ms"/>
+
+        <emphasis level="moderate">
+          <prosody rate="medium" pitch="+5%">
+            명품 브랜드부터 시즌 신상품까지
+          </prosody>
+        </emphasis>
+        <break time="400ms"/>
+
+        <prosody volume="loud" rate="medium">
+          <emphasis level="strong">오직 이번 주말만!</emphasis>
+        </prosody>
+        <break time="300ms"/>
+
+        <prosody rate="slow" pitch="low">
+          지금 바로 방문하셔서 특별한 혜택을 누리세요.
+        </prosody>
+        </voice>
+      </speak>`,
+      [Language.ENGLISH]: `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-US">
+      <voice name="en-US-JennyMultilingualNeural">
+        <prosody rate="medium" pitch="high">
+          <emphasis level="strong">Luxury Spring Sale Festival!</emphasis>
+        </prosody>
+        <break time="400ms"/>
+
+        <prosody rate="fast" pitch="+10%">
+          Up to 60% off on all items
+        </prosody>
+        <break time="300ms"/>
+
+        <emphasis level="moderate">
+          <prosody rate="medium" pitch="+5%">
+            From luxury brands to seasonal new arrivals
+          </prosody>
+        </emphasis>
+        <break time="400ms"/>
+
+        <prosody volume="loud" rate="medium">
+          <emphasis level="strong">This weekend only!</emphasis>
+        </prosody>
+        <break time="300ms"/>
+
+        <prosody rate="slow" pitch="low">
+          Visit now and enjoy these exclusive benefits.
+        </prosody>
+        </voice>
+      </speak>`,
+    },
   }[model][language];
 };
 
@@ -124,6 +185,11 @@ const models = [
     name: Model.AWS,
     description: "AWS Polly",
     icon: <Amphora className="h-5 w-5" />,
+  },
+  {
+    name: Model.AZURE,
+    description: "Azure Text-to-Speech",
+    icon: <Cloud className="h-5 w-5" />,
   },
 ];
 

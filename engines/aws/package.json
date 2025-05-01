@@ -1,0 +1,12 @@
+{
+  "name": "@repo/aws",
+  "module": "index.ts",
+  "type": "module",
+  "dependencies": {
+    "@repo/protocol": "workspace:*",
+    "@aws-sdk/client-polly": "3.799.0"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
+}

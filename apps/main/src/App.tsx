@@ -1,26 +1,26 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Zap, Amphora, Cloud } from "lucide-react";
-import { Toaster } from "./components/ui/sonner";
-import { toast } from "sonner";
+} from '@/components/ui/card';
+import { Textarea } from '@/components/ui/textarea';
+import { Amphora, Cloud, Loader2, Zap } from 'lucide-react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { Toaster } from './components/ui/sonner';
 
 enum Language {
-  KOREAN = "KOREAN",
-  ENGLISH = "ENGLISH",
+  KOREAN = 'KOREAN',
+  ENGLISH = 'ENGLISH',
 }
 
 enum Model {
-  GCP = "GCP",
-  AWS = "AWS",
-  AZURE = "AZURE",
+  GCP = 'GCP',
+  AWS = 'AWS',
+  AZURE = 'AZURE',
 }
 
 const getDefaultSsml = ({
@@ -171,24 +171,24 @@ const getDefaultSsml = ({
 };
 
 const languages = [
-  { name: Language.KOREAN, description: "한국인이 사용하는 언어" },
-  { name: Language.ENGLISH, description: "미국인이 사용하는 언어" },
+  { name: Language.KOREAN, description: '한국인이 사용하는 언어' },
+  { name: Language.ENGLISH, description: '미국인이 사용하는 언어' },
 ];
 
 const models = [
   {
     name: Model.GCP,
-    description: "Google Speech-to-Text",
+    description: 'Google Speech-to-Text',
     icon: <Zap className="h-5 w-5" />,
   },
   {
     name: Model.AWS,
-    description: "AWS Polly",
+    description: 'AWS Polly',
     icon: <Amphora className="h-5 w-5" />,
   },
   {
     name: Model.AZURE,
-    description: "Azure Text-to-Speech",
+    description: 'Azure Text-to-Speech',
     icon: <Cloud className="h-5 w-5" />,
   },
 ];
@@ -196,7 +196,7 @@ const models = [
 export const App = () => {
   const [selectedModel, setSelectedModel] = useState(models[0]);
   const [selectedLanguage, setSelectedLanguage] = useState(languages[1]);
-  const [input, setInput] = useState<string>("");
+  const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
 
   const ssml =
@@ -210,31 +210,31 @@ export const App = () => {
     const audioContext = new AudioContext();
     setIsLoading(true);
     try {
-      const response = await fetch("/api/ssml-test", {
+      const response = await fetch('/api/ssml-test', {
         body: JSON.stringify({
           ssml,
           type: selectedModel.name,
           language: selectedLanguage.name,
         }),
-        method: "POST",
+        method: 'POST',
       });
-      if (!response.ok) {
-        const err = await response.json();
-        const message =
-          err != null &&
-          typeof err === "object" &&
-          "message" in err &&
-          typeof err.message === "string"
-            ? err.message
-            : "실패: 알 수 없는 오류";
-        toast(message);
-      } else {
+      if (response.ok) {
         const arrayBuffer = await response.arrayBuffer();
         const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
         const source = audioContext.createBufferSource();
         source.buffer = audioBuffer;
         source.connect(audioContext.destination);
         source.start();
+      } else {
+        const err = await response.json();
+        const message =
+          err != null &&
+          typeof err === 'object' &&
+          'message' in err &&
+          typeof err.message === 'string'
+            ? err.message
+            : '실패: 알 수 없는 오류';
+        toast(message);
       }
     } finally {
       setIsLoading(false);
@@ -252,8 +252,8 @@ export const App = () => {
                 key={language.name}
                 className={`cursor-pointer transition-all hover:border-primary ${
                   selectedLanguage.name === language.name
-                    ? "border-2 border-primary"
-                    : ""
+                    ? 'border-2 border-primary'
+                    : ''
                 }`}
                 onClick={() => setSelectedLanguage(language)}
               >
@@ -273,8 +273,8 @@ export const App = () => {
                 key={model.name}
                 className={`cursor-pointer transition-all hover:border-primary ${
                   selectedModel.name === model.name
-                    ? "border-2 border-primary"
-                    : ""
+                    ? 'border-2 border-primary'
+                    : ''
                 }`}
                 onClick={() => setSelectedModel(model)}
               >
@@ -319,7 +319,7 @@ export const App = () => {
                   Processing...
                 </>
               ) : (
-                "Run Model"
+                'Run Model'
               )}
             </Button>
           </CardContent>

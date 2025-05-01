@@ -1,0 +1,12 @@
+{
+  "name": "@repo/azure",
+  "module": "index.ts",
+  "type": "module",
+  "dependencies": {
+    "@repo/protocol": "workspace:*",
+    "microsoft-cognitiveservices-speech-sdk": "1.43.1"
+  },
+  "devDependencies": {
+    "typescript": "5.8.3"
+  }
+}

@@ -46,5 +46,9 @@ if __name__ == "__main__":
         print(json.dumps({"error": "No file path provided"}))
         sys.exit(1)
     path = sys.argv[1]
-    result = extract_features(path)
-    print(json.dumps(result))
+    try:
+        result = extract_features(path)
+        print(json.dumps(result))
+    except Exception as e:
+        print(json.dumps({"error": str(e)}))
+        sys.exit(1)

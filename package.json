@@ -10,5 +10,9 @@
   "workspaces": ["apps/*", "engines/*", "packages/*"],
   "devDependencies": {
     "@biomejs/biome": "1.9.4"
+  },
+  "dependencies": {
+    "buffer": "6.0.3",
+    "dotenv": "16.5.0"
   }
 }

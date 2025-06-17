@@ -8,9 +8,10 @@ import {
 } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Amphora, Cloud, Loader2, Zap } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { toast } from 'sonner';
 import { Toaster } from './components/ui/sonner';
+import { Buffer } from 'buffer';
 
 enum Language {
   KOREAN = 'KOREAN',
@@ -193,6 +194,50 @@ const models = [
   },
 ];
 
+function encodeWav(audioBuffer: AudioBuffer): ArrayBuffer {
+  const numChannels = audioBuffer.numberOfChannels;
+  const sampleRate = audioBuffer.sampleRate;
+  const samples = audioBuffer.length;
+  const bitsPerSample = 16;
+  const blockAlign = numChannels * bitsPerSample / 8;
+  const byteRate = sampleRate * blockAlign;
+  const dataSize = samples * blockAlign;
+  const buffer = new ArrayBuffer(44 + dataSize);
+  const view = new DataView(buffer);
+
+  const writeString = (offset: number, str: string) => {
+    for (let i = 0; i < str.length; i++) {
+      view.setUint8(offset + i, str.charCodeAt(i));
+    }
+  };
+
+  writeString(0, 'RIFF');
+  view.setUint32(4, 36 + dataSize, true);
+  writeString(8, 'WAVE');
+  writeString(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeString(36, 'data');
+  view.setUint32(40, dataSize, true);
+
+  let offset = 44;
+  for (let i = 0; i < samples; i++) {
+    for (let ch = 0; ch < numChannels; ch++) {
+      const sample = audioBuffer.getChannelData(ch)[i];
+      const s = Math.max(-1, Math.min(1, sample));
+      view.setInt16(offset, s * 0x7FFF, true);
+      offset += 2;
+    }
+  }
+
+  return buffer;
+}
+
 export const App = () => {
   const [selectedModel, setSelectedModel] = useState(models[0]);
   const [selectedLanguage, setSelectedLanguage] = useState(languages[1]);
@@ -200,6 +245,9 @@ export const App = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const ssml =
     input ||
@@ -212,6 +260,7 @@ export const App = () => {
     const audioContext = new AudioContext();
     setIsLoading(true);
     try {
+      console.log('음성 재생 시작:', ssml);
       const response = await fetch('/api/ssml-test', {
         body: JSON.stringify({
           ssml,
@@ -229,12 +278,11 @@ export const App = () => {
         source.start();
         console.log('음성 재생 완료');
 
-        const base64Audio = btoa(
-          new Uint8Array(arrayBuffer).reduce(
-            (data, byte) => data + String.fromCharCode(byte),
-            ''
-          )
-        );
+        const wavArrayBuffer = encodeWav(audioBuffer);
+        const base64Audio = Buffer.from(wavArrayBuffer).toString('base64');
+        console.log('✅ wavArrayBuffer byteLength:', wavArrayBuffer.byteLength);
+        console.log('✅ base64Audio length:', base64Audio.length);
+        console.log('✅ base64Audio preview:', base64Audio.slice(0, 100));
 
         setIsAnalyzing(true);
         const analysisResponse = await fetch('/api/analyze', {
@@ -262,6 +310,27 @@ export const App = () => {
       setIsLoading(false);
       setIsAnalyzing(false);
     }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    setUploadedFile(e.target.files[0]);
+  };
+
+  const handleRunFileAnalysis = async () => {
+    if (!uploadedFile) return;
+    const formData = new FormData();
+    formData.append('audio', uploadedFile);
+
+    setIsAnalyzing(true);
+    const analysisResponse = await fetch('/api/analyze', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const result = await analysisResponse.json();
+    setAnalysis(result);
+    setIsAnalyzing(false);
   };
 
   return (
@@ -342,6 +411,27 @@ export const App = () => {
               ) : (
                 'Run Model'
               )}
+            </Button>
+            <Button
+              variant="outline"
+              className="mt-4"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              WAV 파일 업로드
+            </Button>
+            <input
+              type="file"
+              accept=".wav"
+              ref={fileInputRef}
+              onChange={handleFileUpload}
+              className="hidden"
+            />
+            <Button
+              onClick={handleRunFileAnalysis}
+              className="mt-2"
+              disabled={!uploadedFile || isAnalyzing}
+            >
+              {isAnalyzing ? '분석 중...' : '분석 실행'}
             </Button>
           </CardContent>
         </Card>

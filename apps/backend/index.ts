@@ -63,31 +63,41 @@ const handleSsmlTest = async (request: Request): Promise<Response> => {
 
 const handleAnalyze = async (request: Request): Promise<Response> => {
   try {
-    const { audio } = await request.json();
+    const formData = await request.formData();
+    const file = formData.get('audio');
+    if (!file || !(file instanceof File)) {
+      return new Response(JSON.stringify({ message: '파일이 없습니다.' }), {
+        status: 400,
+      });
+    }
+
     const filename = `audio_${Date.now()}.wav`;
     const filepath = `./tmp/${filename}`;
 
-    // Ensure tmp directory exists
-    await Bun.write(filepath, Buffer.from(audio, 'base64'));
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    await Bun.write(filepath, buffer);
+    console.log('📥 uploaded file size:', buffer.length);
 
-    const result = await Bun.spawn([
+    const result = Bun.spawnSync([
       'python3',
-      'apps/backend/analysis/analyze.py',
+      'analysis/analyze.py',
       filepath,
     ]);
-    const stdout = result.stdout;
-    const stderr = result.stderr;
 
-    await Bun.write(filepath, new Uint8Array()); // Overwrite to clear
+    const stdoutText = new TextDecoder().decode(result.stdout);
+    const stderrText = new TextDecoder().decode(result.stderr);
 
-    // Ensure the type cast for stderr
-    if (stderr && String(stderr).length > 0) {
-      return new Response(JSON.stringify({ error: String(stderr) }), {
+    console.log('📤 stdout:', stdoutText);
+    console.log('📛 stderr:', stderrText);
+
+    if (stderrText && stderrText.length > 0) {
+      return new Response(JSON.stringify({ error: stderrText }), {
         status: 500,
       });
     }
 
-    return new Response(String(stdout), {
+    return new Response(stdoutText, {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

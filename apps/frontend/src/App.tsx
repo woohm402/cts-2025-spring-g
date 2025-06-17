@@ -279,20 +279,36 @@ export const App = () => {
         console.log('음성 재생 완료');
 
         const wavArrayBuffer = encodeWav(audioBuffer);
-        const base64Audio = Buffer.from(wavArrayBuffer).toString('base64');
-        console.log('✅ wavArrayBuffer byteLength:', wavArrayBuffer.byteLength);
-        console.log('✅ base64Audio length:', base64Audio.length);
-        console.log('✅ base64Audio preview:', base64Audio.slice(0, 100));
+        const blob = new Blob([wavArrayBuffer], { type: 'audio/wav' });
+        const file = new File([blob], 'tts.wav', { type: 'audio/wav' });
+
+        const formData = new FormData();
+        formData.append('audio', file);
 
         setIsAnalyzing(true);
         const analysisResponse = await fetch('/api/analyze', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ audio: base64Audio }),
+          body: formData,
         });
+
         const result = await analysisResponse.json();
         setAnalysis(result);
         console.log('음성 분석 결과:', result);
+
+        // Previous base64Audio and JSON body construction lines removed
+        // const base64Audio = Buffer.from(wavArrayBuffer).toString('base64');
+        // console.log('✅ wavArrayBuffer byteLength:', wavArrayBuffer.byteLength);
+        // console.log('✅ base64Audio length:', base64Audio.length);
+        // console.log('✅ base64Audio preview:', base64Audio.slice(0, 100));
+        // setIsAnalyzing(true);
+        // const analysisResponse = await fetch('/api/analyze', {
+        //   method: 'POST',
+        //   headers: { 'Content-Type': 'application/json' },
+        //   body: JSON.stringify({ audio: base64Audio }),
+        // });
+        // const result = await analysisResponse.json();
+        // setAnalysis(result);
+        // console.log('음성 분석 결과:', result);
       } else {
         const err = await response.json();
         const message =

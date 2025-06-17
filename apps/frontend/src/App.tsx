@@ -198,6 +198,8 @@ export const App = () => {
   const [selectedLanguage, setSelectedLanguage] = useState(languages[1]);
   const [input, setInput] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const ssml =
     input ||
@@ -225,6 +227,24 @@ export const App = () => {
         source.buffer = audioBuffer;
         source.connect(audioContext.destination);
         source.start();
+        console.log('음성 재생 완료');
+
+        const base64Audio = btoa(
+          new Uint8Array(arrayBuffer).reduce(
+            (data, byte) => data + String.fromCharCode(byte),
+            ''
+          )
+        );
+
+        setIsAnalyzing(true);
+        const analysisResponse = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ audio: base64Audio }),
+        });
+        const result = await analysisResponse.json();
+        setAnalysis(result);
+        console.log('음성 분석 결과:', result);
       } else {
         const err = await response.json();
         const message =
@@ -236,8 +256,11 @@ export const App = () => {
             : '실패: 알 수 없는 오류';
         toast(message);
       }
+    } catch (error) {
+      toast('분석 중 오류 발생');
     } finally {
       setIsLoading(false);
+      setIsAnalyzing(false);
     }
   };
 
@@ -250,11 +273,10 @@ export const App = () => {
             {languages.map((language) => (
               <Card
                 key={language.name}
-                className={`cursor-pointer transition-all hover:border-primary ${
-                  selectedLanguage.name === language.name
+                className={`cursor-pointer transition-all hover:border-primary ${selectedLanguage.name === language.name
                     ? 'border-2 border-primary'
                     : ''
-                }`}
+                  }`}
                 onClick={() => setSelectedLanguage(language)}
               >
                 <CardHeader>
@@ -271,11 +293,10 @@ export const App = () => {
             {models.map((model) => (
               <Card
                 key={model.name}
-                className={`cursor-pointer transition-all hover:border-primary ${
-                  selectedModel.name === model.name
+                className={`cursor-pointer transition-all hover:border-primary ${selectedModel.name === model.name
                     ? 'border-2 border-primary'
                     : ''
-                }`}
+                  }`}
                 onClick={() => setSelectedModel(model)}
               >
                 <CardHeader>
@@ -325,6 +346,17 @@ export const App = () => {
           </CardContent>
         </Card>
       </div>
+      {isAnalyzing && (
+        <p className="text-sm text-muted-foreground col-span-3">🔍 분석 중입니다...</p>
+      )}
+      {analysis && (
+        <div className="col-span-3 p-4 border rounded text-sm bg-muted">
+          <div>🎯 감정: {analysis.emotion}</div>
+          <div>🎵 평균 피치: {analysis.pitch_avg.toFixed(2)}</div>
+          <div>🗣️ 스피치 속도: {analysis.speech_rate.toFixed(2)} 단어/초</div>
+          <div>💥 에너지: {analysis.energy.toFixed(4)}</div>
+        </div>
+      )}
       <Toaster />
     </div>
   );

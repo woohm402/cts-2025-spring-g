@@ -11,6 +11,10 @@ Bun.serve({
       if (url.pathname === '/api/ssml-test' && request.method === 'POST')
         return handleSsmlTest(request);
 
+      if (url.pathname === '/api/analyze' && request.method === 'POST') {
+        return handleAnalyze(request);
+      }
+
       return new Response(null, { status: 403 });
     } catch (err) {
       return new Response(
@@ -54,5 +58,45 @@ const handleSsmlTest = async (request: Request): Promise<Response> => {
         ),
         { status: 200 },
       );
+  }
+};
+
+const handleAnalyze = async (request: Request): Promise<Response> => {
+  try {
+    const { audio } = await request.json();
+    const filename = `audio_${Date.now()}.wav`;
+    const filepath = `./tmp/${filename}`;
+
+    // Ensure tmp directory exists
+    await Bun.write(filepath, Buffer.from(audio, 'base64'));
+
+    const result = await Bun.spawn([
+      'python3',
+      'apps/backend/analysis/analyze.py',
+      filepath,
+    ]);
+    const stdout = result.stdout;
+    const stderr = result.stderr;
+
+    await Bun.write(filepath, new Uint8Array()); // Overwrite to clear
+
+    // Ensure the type cast for stderr
+    if (stderr && String(stderr).length > 0) {
+      return new Response(JSON.stringify({ error: String(stderr) }), {
+        status: 500,
+      });
+    }
+
+    return new Response(String(stdout), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  } catch (err) {
+    return new Response(
+      JSON.stringify({
+        message: err instanceof Error ? err.message : 'Unknown error',
+      }),
+      { status: 500 },
+    );
   }
 };

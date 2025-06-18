@@ -7,7 +7,7 @@
     "check": "biome check .",
     "fix": "biome check . --fix"
   },
-  "workspaces": ["apps/*", "engines/*", "packages/*"],
+  "workspaces": ["apps/*"],
   "devDependencies": {
     "@biomejs/biome": "1.9.4"
   }

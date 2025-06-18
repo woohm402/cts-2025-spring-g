@@ -1,3 +1,4 @@
+import { spawn } from 'child_process';
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { awsPollySsmlToSpeech } from './lib/awsPollySsmlToSpeech';
@@ -27,6 +28,7 @@ Bun.serve({
         return new Response(JSON.stringify({ ssml: db.ssml ?? null }), { status: 200 });
       if (url.pathname === '/api/session/audio' && request.method === 'GET')
         return new Response(db.audio ?? null, { status: 200 });
+      if (url.pathname === '/api/session/analyze' && request.method === 'POST') return generateAnalysis();
 
       return new Response(null, { status: 404 });
     } catch (err) {
@@ -81,20 +83,20 @@ const handleSts = async (file: File) => {
 
   let ssml = completion.choices[0].message.content;
 
-  if (ssml === null) throw new Error();
-  
+  if (ssml === null) throw new Error('no ssml created');
+
   // Clean up the SSML response - remove any markdown code formatting
   if (ssml.includes('```xml')) {
     ssml = ssml.replace(/```xml\s*/, '').replace(/\s*```\s*$/, '');
   } else if (ssml.includes('```')) {
     ssml = ssml.replace(/```\s*/, '').replace(/\s*```\s*$/, '');
   }
-  
+
   // Ensure we have a valid SSML document
   if (!ssml.trim().startsWith('<speak')) {
     ssml = `<speak>${ssml}</speak>`;
   }
-  
+
   console.info('ssml', ssml);
   db.ssml = ssml;
 
@@ -102,4 +104,47 @@ const handleSts = async (file: File) => {
   const result = await awsPollySsmlToSpeech({ ssml });
   console.info('result', result);
   db.audio = result;
+};
+
+const generateAnalysis = async () => {
+  try {
+    if (!db.audio) {
+      return new Response(JSON.stringify({ error: 'No audio data available' }), { status: 400 });
+    }
+
+    const result = await new Promise((resolve, reject) => {
+      const python = spawn('python3', ['/analysis/analyze.py']);
+      let data = '';
+
+      if (db.audio) {
+        python.stdin.write(Buffer.from(db.audio));
+      } else {
+        throw new Error('Audio data is undefined');
+      }
+      python.stdin.end();
+
+      python.stdout.on('data', (chunk) => {
+        data += chunk.toString();
+      });
+
+      python.stderr.on('data', (err) => {
+        console.error('stderr:', err.toString());
+      });
+
+      python.on('close', () => {
+        try {
+          console.info('Raw output from Python:', data);
+          const parsed = JSON.parse(data);
+          resolve(parsed);
+        } catch (_) {
+          reject(new Error('Failed to parse analysis result'));
+        }
+      });
+    });
+
+    return new Response(JSON.stringify(result), { status: 200 });
+  } catch (err) {
+    console.error('Analysis error:', err);
+    return new Response(JSON.stringify({ error: 'Analysis failed' }), { status: 500 });
+  }
 };

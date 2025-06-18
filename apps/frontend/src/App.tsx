@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 
 export const App = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -7,10 +7,11 @@ export const App = () => {
   const [transcription, setTranscription] = useState<string | null>(null);
   const [ssml, setSsml] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<unknown>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
     }
@@ -24,6 +25,7 @@ export const App = () => {
     setTranscription(null);
     setSsml(null);
     setAudioUrl(null);
+    setAnalysis(null);
 
     try {
       const formData = new FormData();
@@ -110,17 +112,20 @@ export const App = () => {
 
       <div className="mb-6 p-4 border rounded">
         <div className="mb-4">
-          <label className="block mb-2 font-medium">Upload MP3 File</label>
-          <input
-            type="file"
-            accept=".mp3,audio/*"
-            onChange={handleFileChange}
-            className="block w-full border rounded p-2"
-            disabled={isUploading || isProcessing}
-          />
+          <label className="block mb-2 font-medium">
+            Upload MP3 File
+            <input
+              type="file"
+              accept=".mp3,audio/*"
+              onChange={handleFileChange}
+              className="block w-full border rounded p-2"
+              disabled={isUploading || isProcessing}
+            />
+          </label>
         </div>
 
         <button
+          type="button"
           onClick={handleUpload}
           disabled={!file || isUploading || isProcessing}
           className={`px-4 py-2 rounded ${
@@ -137,7 +142,7 @@ export const App = () => {
         <div className="mb-6 p-4 border rounded">
           <p className="font-medium mb-2">Processing your audio...</p>
           <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div className="bg-blue-500 h-2.5 rounded-full animate-pulse w-full"></div>
+            <div className="bg-blue-500 h-2.5 rounded-full animate-pulse w-full" />
           </div>
         </div>
       )}
@@ -162,8 +167,41 @@ export const App = () => {
         <div className="p-4 border rounded">
           <h2 className="text-xl font-semibold mb-2">Generated Audio</h2>
           <audio ref={audioRef} src={audioUrl} controls={true} className="w-full" />
+
+          <button
+            type="button"
+            onClick={async () => {
+              const res = await fetch(audioUrl);
+              const blob = await res.blob();
+              const arrayBuffer = await blob.arrayBuffer();
+              const base64Audio = btoa(
+                new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), ''),
+              );
+
+              const analysisRes = await fetch('/api/session/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio: base64Audio }),
+              });
+
+              const result = await analysisRes.json();
+              setAnalysis(result);
+            }}
+            className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Analyze Generated Audio
+          </button>
         </div>
       )}
+
+      {analysis ? (
+        <div className="mt-4 p-4 border rounded">
+          <h2 className="text-xl font-semibold mb-2">Analysis Result</h2>
+          <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap overflow-auto max-h-60">
+            {JSON.stringify(analysis, null, 2)}
+          </pre>
+        </div>
+      ) : null}
     </div>
   );
 };

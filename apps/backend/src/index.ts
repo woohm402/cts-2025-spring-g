@@ -1,4 +1,5 @@
 import { spawn } from 'node:child_process';
+import path from 'node:path'
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { awsPollySsmlToSpeech } from './lib/awsPollySsmlToSpeech';
@@ -113,7 +114,7 @@ const generateAnalysis = async () => {
     }
 
     const result = await new Promise((resolve, reject) => {
-      const python = spawn('python3', ['/analysis/analyze.py']);
+      const python = spawn('python3', [path.join(import.meta.dirname, '../analysis/analyze.py')]);
       let data = '';
 
       if (db.audio) {

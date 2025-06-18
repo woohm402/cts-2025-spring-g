@@ -7,6 +7,7 @@ export const App = () => {
   const [transcription, setTranscription] = useState<string | null>(null);
   const [ssml, setSsml] = useState<string | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [analysis, setAnalysis] = useState<any>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -24,6 +25,7 @@ export const App = () => {
     setTranscription(null);
     setSsml(null);
     setAudioUrl(null);
+    setAnalysis(null);
 
     try {
       const formData = new FormData();
@@ -162,6 +164,41 @@ export const App = () => {
         <div className="p-4 border rounded">
           <h2 className="text-xl font-semibold mb-2">Generated Audio</h2>
           <audio ref={audioRef} src={audioUrl} controls={true} className="w-full" />
+
+          <button
+            onClick={async () => {
+              const res = await fetch(audioUrl);
+              const blob = await res.blob();
+              const arrayBuffer = await blob.arrayBuffer();
+              const base64Audio = btoa(
+                new Uint8Array(arrayBuffer).reduce(
+                  (data, byte) => data + String.fromCharCode(byte),
+                  ''
+                )
+              );
+
+              const analysisRes = await fetch('/api/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ audio: base64Audio }),
+              });
+
+              const result = await analysisRes.json();
+              setAnalysis(result);
+            }}
+            className="mt-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          >
+            Analyze Generated Audio
+          </button>
+        </div>
+      )}
+
+      {analysis && (
+        <div className="mt-4 p-4 border rounded">
+          <h2 className="text-xl font-semibold mb-2">Analysis Result</h2>
+          <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap overflow-auto max-h-60">
+            {JSON.stringify(analysis, null, 2)}
+          </pre>
         </div>
       )}
     </div>

@@ -1,6 +1,7 @@
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { awsPollySsmlToSpeech } from './lib/awsPollySsmlToSpeech';
+import { spawn } from 'child_process';
 
 type DB = {
   transcription: string;
@@ -27,6 +28,49 @@ Bun.serve({
         return new Response(JSON.stringify({ ssml: db.ssml ?? null }), { status: 200 });
       if (url.pathname === '/api/session/audio' && request.method === 'GET')
         return new Response(db.audio ?? null, { status: 200 });
+
+      // New POST route to analyze the audio using the analyze.py module
+      if (url.pathname === '/api/session/analyze' && request.method === 'POST') {
+        try {
+          if (!db.audio) {
+            return new Response(JSON.stringify({ error: 'No audio data available' }), { status: 400 });
+          }
+
+          const result = await new Promise((resolve, reject) => {
+            const python = spawn('python3', ['/analysis/analyze.py']);
+            let data = '';
+
+            if (db.audio) {
+              python.stdin.write(Buffer.from(db.audio));
+            } else {
+              throw new Error('Audio data is undefined');
+            }
+            python.stdin.end();
+
+            python.stdout.on('data', (chunk) => {
+              data += chunk.toString();
+            });
+
+            python.stderr.on('data', (err) => {
+              console.error('stderr:', err.toString());
+            });
+
+            python.on('close', () => {
+              try {
+                const parsed = JSON.parse(data);
+                resolve(parsed);
+              } catch (e) {
+                reject(new Error('Failed to parse analysis result'));
+              }
+            });
+          });
+
+          return new Response(JSON.stringify(result), { status: 200 });
+        } catch (err) {
+          console.error('Analysis error:', err);
+          return new Response(JSON.stringify({ error: 'Analysis failed' }), { status: 500 });
+        }
+      }
 
       return new Response(null, { status: 404 });
     } catch (err) {

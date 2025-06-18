@@ -7,9 +7,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-polly": "3.799.0",
-    "@repo/aws": "workspace:*",
-    "@repo/azure": "workspace:*",
-    "@repo/gcp": "workspace:*",
     "openai": "5.5.1",
     "zod": "3.24.3"
   },

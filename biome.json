@@ -8,6 +8,9 @@
   "linter": {
     "rules": {
       "all": true,
+      "a11y": {
+        "useMediaCaption": "off"
+      },
       "complexity": {
         "noExcessiveCognitiveComplexity": "off"
       },

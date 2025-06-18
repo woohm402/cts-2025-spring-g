@@ -177,7 +177,7 @@ export const App = () => {
                 )
               );
 
-              const analysisRes = await fetch('/api/analyze', {
+              const analysisRes = await fetch('/api/session/analyze', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ audio: base64Audio }),

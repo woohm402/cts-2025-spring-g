@@ -57,6 +57,7 @@ Bun.serve({
 
             python.on('close', () => {
               try {
+                console.log('Raw output from Python:', data);
                 const parsed = JSON.parse(data);
                 resolve(parsed);
               } catch (e) {

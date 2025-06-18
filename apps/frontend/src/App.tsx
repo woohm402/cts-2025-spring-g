@@ -27,6 +27,7 @@ export const App = () => {
     setAudioUrl(null);
     setAnalysis(null);
 
+
     try {
       const formData = new FormData();
       formData.append('file', file);
@@ -199,6 +200,7 @@ export const App = () => {
           <pre className="bg-gray-100 p-4 rounded whitespace-pre-wrap overflow-auto max-h-60">
             {JSON.stringify(analysis, null, 2)}
           </pre>
+
         </div>
       )}
     </div>

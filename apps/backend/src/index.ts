@@ -1,4 +1,4 @@
-import { spawn } from 'child_process';
+import { spawn } from 'node:child_process';
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { awsPollySsmlToSpeech } from './lib/awsPollySsmlToSpeech';
@@ -60,7 +60,7 @@ const handleSts = async (file: File) => {
   console.info('transcribed');
   db.transcription = JSON.stringify(segments);
 
-  if (segments === undefined) throw new Error();
+  if (segments === undefined) throw new Error('no segments');
 
   // Build a prompt for OpenAI to convert the segments to SSML with translation and emotional cues
   const prompt = `Translate the following Korean transcript segments to English and convert to SSML format with appropriate pauses based on timestamps. Include emotional cues for an American show host delivery style with high energy and enthusiasm: ${segments.map((seg) => `Text: "${seg.text}" (${seg.start}s to ${seg.end}s)`).join('\n')}`;

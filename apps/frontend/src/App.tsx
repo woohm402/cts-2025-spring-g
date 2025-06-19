@@ -1,4 +1,4 @@
-import { type ChangeEvent, useEffect, useRef, useState } from 'react';
+import { type ChangeEvent, type DragEvent, useEffect, useRef, useState } from 'react';
 
 export const App = () => {
   const [file, setFile] = useState<File | null>(null);
@@ -10,11 +10,34 @@ export const App = () => {
   const [analysis, setAnalysis] = useState<unknown>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
   const pollingRef = useRef<NodeJS.Timeout | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setFile(e.target.files[0]);
     }
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      setFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
   };
 
   const handleUpload = async () => {
@@ -110,19 +133,30 @@ export const App = () => {
     <div className="container mx-auto p-4 max-w-3xl">
       <h1 className="text-2xl font-bold mb-6">Speech-to-Speech Converter</h1>
 
-      <div className="mb-6 p-4 border rounded">
+      <div
+        className={`mb-6 p-4 border-2 border-dashed rounded transition-colors ${
+          isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300'
+        }`}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+      >
         <div className="mb-4">
           <label className="block mb-2 font-medium">
             Upload MP3 File
             <input
               type="file"
+              hidden={true}
               accept=".mp3,audio/*"
               onChange={handleFileChange}
               className="block w-full border rounded p-2"
               disabled={isUploading || isProcessing}
             />
           </label>
+          <p className="text-sm text-gray-500 mt-2 text-center">Drop your file here</p>
         </div>
+
+        {file && <div className="mb-4 p-2 bg-gray-100 rounded text-sm text-gray-700">Selected: {file.name}</div>}
 
         <button
           type="button"

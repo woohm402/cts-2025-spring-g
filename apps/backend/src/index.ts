@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import path from 'node:path'
+import path from 'node:path';
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { awsPollySsmlToSpeech } from './lib/awsPollySsmlToSpeech';

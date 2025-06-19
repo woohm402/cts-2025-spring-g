@@ -1,12 +1,3 @@
-# e2e 테스트 모듈
+# Backend
 
-## Setup
-
-```env
-# .env.local
-AWS_ACCESS_KEY_ID=
-AWS_SECRET_ACCESS_KEY=
-AZURE_SPEECH_KEY=
-```
-
-그리고 `gcloud auth application-default login` 되어 있어야 합니다.
+[root readme](../../README.md)를 참고해 주세요.

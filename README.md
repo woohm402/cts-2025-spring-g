@@ -2,7 +2,7 @@
 
 ## Usage
 
-먼저 [bunjs](https://bun.sh/) 1.2 이상과 [python](https://www.python.org/downloads/) 3.10 이상 버전 설치가 필요합니다.
+먼저 [bunjs](https://bun.sh/) 1.2 이상과 [python](https://www.python.org/downloads/) 3.13 이상 버전 설치가 필요합니다.
 
 설치된 상태에서, 이 repository를 clone 받고 root 경로에서 아래와 같이 실행합니다.
 
